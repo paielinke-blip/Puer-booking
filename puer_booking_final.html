@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Puer Hurghada | نظام الحجوزات</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Tajawal',sans-serif;background:#f0f4f8;color:#1a1a1a;}
+:root{
+  --blue:#1a4a6b;--teal:#0891b2;--gold:#b8860b;
+  --green:#16a34a;--red:#dc2626;--gray:#6b7280;
+  --orange:#ea580c;--purple:#7c3aed;
+}
+
+/* LOGIN */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1a4a6b,#0f2d45);padding:20px;}
+.login-box{background:white;border-radius:16px;padding:40px 36px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,0.3);}
+.login-logo{text-align:center;margin-bottom:28px;}
+.login-logo h1{font-size:1.8rem;font-weight:900;color:var(--blue);}
+.login-logo p{color:var(--gray);font-size:0.9rem;margin-top:4px;}
+.login-tabs{display:flex;margin-bottom:24px;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;}
+.login-tab{flex:1;padding:11px;text-align:center;cursor:pointer;font-size:0.88rem;font-weight:700;background:#f8f8f8;color:var(--gray);border:none;font-family:'Tajawal',sans-serif;transition:all 0.2s;}
+.login-tab.active{background:var(--blue);color:white;}
+.fg{margin-bottom:16px;}
+.fg label{display:block;font-size:0.83rem;font-weight:700;color:#444;margin-bottom:6px;}
+.fg input,.fg select{width:100%;border:1px solid #ddd;border-radius:8px;padding:12px 14px;font-family:'Tajawal',sans-serif;font-size:0.92rem;outline:none;transition:border-color 0.2s;background:#fafafa;}
+.fg input:focus,.fg select:focus{border-color:var(--teal);background:white;}
+.btn-login{width:100%;padding:14px;background:var(--blue);color:white;border:none;border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer;font-family:'Tajawal',sans-serif;transition:background 0.2s;}
+.btn-login:hover{background:#0f2d45;}
+.login-err{background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;padding:10px 14px;font-size:0.85rem;color:var(--red);margin-bottom:14px;display:none;}
+
+/* LAYOUT */
+.app{display:none;min-height:100vh;}
+.sidebar{width:245px;background:var(--blue);min-height:100vh;position:fixed;top:0;right:0;z-index:100;display:flex;flex-direction:column;box-shadow:4px 0 20px rgba(0,0,0,0.2);}
+.sidebar-logo{padding:22px 20px;border-bottom:1px solid rgba(255,255,255,0.1);}
+.sidebar-logo h2{color:white;font-size:1.05rem;font-weight:900;}
+.sidebar-logo p{color:rgba(255,255,255,0.55);font-size:0.72rem;margin-top:3px;}
+.sidebar-user{padding:14px 20px;background:rgba(255,255,255,0.08);border-bottom:1px solid rgba(255,255,255,0.1);}
+.sidebar-user .uname{color:white;font-weight:700;font-size:0.88rem;}
+.sidebar-user .urole{color:var(--gold);font-size:0.75rem;font-weight:600;margin-top:2px;}
+.sidebar-nav{flex:1;padding:12px 0;overflow-y:auto;}
+.snav-section{padding:10px 20px 4px;font-size:0.7rem;font-weight:700;color:rgba(255,255,255,0.35);letter-spacing:1.5px;text-transform:uppercase;}
+.snav-item{display:flex;align-items:center;gap:10px;padding:11px 20px;color:rgba(255,255,255,0.75);cursor:pointer;font-size:0.88rem;font-weight:500;transition:all 0.2s;border:none;background:transparent;font-family:'Tajawal',sans-serif;width:100%;text-align:right;border-right:3px solid transparent;}
+.snav-item:hover{background:rgba(255,255,255,0.1);color:white;}
+.snav-item.active{background:rgba(255,255,255,0.14);color:white;border-right-color:var(--gold);}
+.snav-icon{font-size:1rem;min-width:20px;text-align:center;}
+.snav-badge{margin-right:auto;background:var(--red);color:white;border-radius:10px;padding:2px 7px;font-size:0.7rem;font-weight:700;}
+.sidebar-footer{padding:14px 20px;border-top:1px solid rgba(255,255,255,0.1);}
+.btn-logout{width:100%;padding:10px;background:rgba(220,38,38,0.2);color:#fca5a5;border:1px solid rgba(220,38,38,0.3);border-radius:8px;cursor:pointer;font-size:0.88rem;font-weight:700;font-family:'Tajawal',sans-serif;transition:all 0.2s;}
+.btn-logout:hover{background:rgba(220,38,38,0.4);color:white;}
+.main{margin-right:245px;padding:28px;min-height:100vh;}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:26px;flex-wrap:wrap;gap:12px;}
+.topbar h1{font-size:1.45rem;font-weight:900;color:var(--blue);}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:16px;margin-bottom:24px;}
+.stat-card{background:white;border-radius:12px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.06);border:1px solid #e8edf2;display:flex;align-items:center;gap:14px;}
+.stat-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;}
+.si-blue{background:#dbeafe;} .si-green{background:#dcfce7;} .si-gold{background:#fef9c3;} .si-red{background:#fee2e2;} .si-orange{background:#ffedd5;} .si-purple{background:#ede9fe;}
+.stat-num{font-size:1.65rem;font-weight:900;color:var(--blue);line-height:1;}
+.stat-lbl{font-size:0.75rem;color:var(--gray);font-weight:600;margin-top:3px;}
+
+/* CARDS */
+.card{background:white;border-radius:12px;padding:26px;box-shadow:0 2px 10px rgba(0,0,0,0.06);border:1px solid #e8edf2;margin-bottom:20px;}
+.card-title{font-size:1rem;font-weight:800;color:var(--blue);margin-bottom:20px;padding-bottom:12px;border-bottom:2px solid #f0f4f8;display:flex;align-items:center;gap:8px;}
+
+/* FORM */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.form-grid.g3{grid-template-columns:1fr 1fr 1fr;}
+.full{grid-column:1/-1;}
+.fg-inline{display:flex;gap:12px;align-items:flex-end;}
+
+/* BUTTONS */
+.btn{padding:10px 22px;border-radius:8px;font-size:0.9rem;font-weight:700;cursor:pointer;font-family:'Tajawal',sans-serif;border:none;transition:all 0.2s;display:inline-flex;align-items:center;gap:7px;white-space:nowrap;}
+.btn-sm{padding:6px 14px;font-size:0.8rem;}
+.btn-blue{background:var(--blue);color:white;} .btn-blue:hover{background:#0f2d45;}
+.btn-green{background:var(--green);color:white;} .btn-green:hover{background:#15803d;}
+.btn-gold{background:var(--gold);color:white;} .btn-gold:hover{background:#9a6c09;}
+.btn-red{background:var(--red);color:white;} .btn-red:hover{background:#b91c1c;}
+.btn-orange{background:var(--orange);color:white;} .btn-orange:hover{background:#c2410c;}
+.btn-wa{background:#25d366;color:white;} .btn-wa:hover{background:#1ea855;}
+.btn-outline{background:transparent;border:1px solid #ddd;color:var(--gray);} .btn-outline:hover{border-color:var(--blue);color:var(--blue);}
+.btn-purple{background:var(--purple);color:white;} .btn-purple:hover{background:#6d28d9;}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:0.85rem;}
+th{background:#f8fafc;color:var(--blue);font-weight:800;padding:11px 13px;text-align:right;border-bottom:2px solid #e8edf2;white-space:nowrap;}
+td{padding:10px 13px;border-bottom:1px solid #f0f4f8;color:#333;vertical-align:middle;}
+tr:hover td{background:#fafcff;}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:0.73rem;font-weight:700;white-space:nowrap;}
+.b-pending{background:#fef9c3;color:#854d0e;}
+.b-confirmed{background:#dcfce7;color:#166534;}
+.b-cancelled{background:#fee2e2;color:#991b1b;}
+.b-paid{background:#d1fae5;color:#065f46;}
+.b-unpaid{background:#fee2e2;color:#991b1b;}
+.b-waiting{background:#e0e7ff;color:#3730a3;}
+
+/* ALERT */
+.alert{padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:0.88rem;font-weight:600;}
+.alert-success{background:#dcfce7;border:1px solid #86efac;color:#166534;}
+.alert-error{background:#fee2e2;border:1px solid #fca5a5;color:var(--red);}
+.alert-info{background:#dbeafe;border:1px solid #93c5fd;color:#1e40af;}
+
+/* FILTERS */
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center;}
+.filters input,.filters select{border:1px solid #ddd;border-radius:8px;padding:9px 13px;font-family:'Tajawal',sans-serif;font-size:0.86rem;outline:none;background:white;transition:border-color 0.2s;}
+.filters input:focus,.filters select:focus{border-color:var(--teal);}
+
+/* EMPTY */
+.empty{text-align:center;padding:44px;color:var(--gray);}
+.empty .ei{font-size:3rem;margin-bottom:12px;}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;display:none;align-items:center;justify-content:center;padding:16px;}
+.overlay.show{display:flex;}
+.modal{background:white;border-radius:16px;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.4);}
+.modal-hdr{padding:18px 22px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:white;z-index:1;}
+.modal-hdr h3{font-size:1.05rem;font-weight:800;color:var(--blue);}
+.modal-close{background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--gray);line-height:1;}
+.modal-body{padding:22px;}
+
+/* TICKET */
+.ticket{border:2px solid var(--blue);border-radius:12px;overflow:hidden;background:white;}
+.ticket-hdr{background:linear-gradient(135deg,var(--blue),#0f2d45);color:white;padding:18px 22px;text-align:center;}
+.ticket-hdr h2{font-size:1.25rem;font-weight:900;margin-bottom:2px;}
+.ticket-hdr p{font-size:0.78rem;opacity:0.8;}
+.ticket-num{background:var(--gold);color:white;padding:10px;text-align:center;font-size:1.1rem;font-weight:900;letter-spacing:3px;}
+.ticket-status-bar{padding:8px;text-align:center;font-weight:700;font-size:0.85rem;}
+.ticket-status-bar.paid{background:#dcfce7;color:#166534;}
+.ticket-body{padding:18px 20px;}
+.t-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px dashed #e8e8e8;}
+.t-row:last-child{border-bottom:none;}
+.t-lbl{color:var(--gray);font-size:0.82rem;}
+.t-val{font-weight:700;font-size:0.88rem;color:var(--blue);}
+.ticket-total{background:#f8fafc;border-top:2px solid var(--blue);padding:14px 20px;display:flex;justify-content:space-between;align-items:center;}
+.ticket-total .lbl{font-weight:700;font-size:0.95rem;color:var(--blue);}
+.ticket-total .val{font-size:1.3rem;font-weight:900;color:var(--gold);}
+.ticket-qr{text-align:center;padding:18px 20px;border-top:2px dashed #ccc;}
+.ticket-qr p{font-size:0.72rem;color:var(--gray);margin-top:8px;}
+.ticket-footer{background:#f0f4f8;padding:10px 20px;text-align:center;font-size:0.75rem;color:var(--gray);border-top:1px solid #e0e0e0;}
+
+/* PAYMENT CONFIRM */
+.pay-methods{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0;}
+.pay-method{border:2px solid #e0e0e0;border-radius:10px;padding:14px;cursor:pointer;text-align:center;transition:all 0.2s;}
+.pay-method:hover,.pay-method.selected{border-color:var(--teal);background:#e0f7fa;}
+.pay-method .pm-icon{font-size:1.8rem;margin-bottom:6px;}
+.pay-method .pm-name{font-size:0.85rem;font-weight:700;color:var(--blue);}
+
+/* OFFICE CARD */
+.office-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
+.office-card{background:white;border:1px solid #e8edf2;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+.office-flag{font-size:2.2rem;margin-bottom:8px;}
+.office-name{font-weight:900;font-size:0.98rem;color:var(--blue);margin-bottom:3px;}
+.office-sub{font-size:0.8rem;color:var(--gray);margin-bottom:12px;}
+.office-stats{display:flex;gap:12px;margin-bottom:12px;}
+.os-item{text-align:center;flex:1;background:#f8fafc;border-radius:8px;padding:8px 4px;}
+.os-n{font-weight:900;font-size:1.1rem;color:var(--blue);}
+.os-l{font-size:0.68rem;color:var(--gray);}
+.office-creds{background:#f0f4f8;border-radius:8px;padding:9px 12px;font-size:0.78rem;color:#444;margin-bottom:10px;}
+.office-creds span{font-weight:700;color:var(--blue);}
+
+/* PENDING ALERT */
+.pending-alert{background:linear-gradient(135deg,#fef9c3,#fef3c7);border:2px solid #f59e0b;border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.pending-alert .pa-text{font-weight:700;color:#92400e;font-size:0.92rem;}
+.pending-alert .pa-num{font-size:1.8rem;font-weight:900;color:#92400e;}
+
+/* TIMELINE */
+.timeline{display:flex;flex-direction:column;gap:0;}
+.tl-item{display:flex;gap:14px;padding:12px 0;border-bottom:1px solid #f0f4f8;}
+.tl-item:last-child{border-bottom:none;}
+.tl-dot{width:36px;height:36px;min-width:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;}
+.tl-info h4{font-size:0.88rem;font-weight:700;color:var(--blue);}
+.tl-info p{font-size:0.78rem;color:var(--gray);margin-top:2px;}
+
+@media print{
+  body *{visibility:hidden;}
+  .ticket,.ticket *{visibility:visible;}
+  .ticket{position:fixed;top:20px;right:20px;left:20px;border:2px solid #1a4a6b;}
+}
+@media(max-width:768px){
+  .sidebar{display:none;}
+  .main{margin-right:0;padding:16px;}
+  .form-grid,.form-grid.g3{grid-template-columns:1fr;}
+  .stats-grid{grid-template-columns:1fr 1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-box">
+    <div class="login-logo">
+      <div style="font-size:2.5rem;margin-bottom:8px">🌊</div>
+      <h1>Puer Hurghada</h1>
+      <p>نظام إدارة الحجوزات والتذاكر</p>
+    </div>
+    <div class="login-tabs">
+      <button class="login-tab active" onclick="setLT('admin')">👑 أدمن</button>
+      <button class="login-tab" onclick="setLT('office')">🏢 مكتب شريك</button>
+    </div>
+    <div class="login-err" id="loginErr">بيانات غلط، حاول تاني</div>
+    <div class="fg"><label>اسم المستخدم</label><input type="text" id="lUser" placeholder="admin"></div>
+    <div class="fg"><label>كلمة المرور</label><input type="password" id="lPass" placeholder="••••••••" onkeypress="if(event.key==='Enter')doLogin()"></div>
+    <button class="btn-login" onclick="doLogin()">🔐 دخول</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="app">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <h2>🌊 Puer Hurghada</h2>
+      <p>نظام الحجوزات والتذاكر</p>
+    </div>
+    <div class="sidebar-user">
+      <div class="uname" id="sUser">—</div>
+      <div class="urole" id="sRole">—</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="snav-section">الرئيسية</div>
+      <button class="snav-item active" data-page="dashboard" onclick="goPage('dashboard',this)">
+        <span class="snav-icon">📊</span> لوحة التحكم
+      </button>
+      <div class="snav-section">الحجوزات</div>
+      <button class="snav-item" data-page="new-booking" onclick="goPage('new-booking',this)">
+        <span class="snav-icon">➕</span> حجز جديد
+      </button>
+      <button class="snav-item" data-page="pending" onclick="goPage('pending',this)">
+        <span class="snav-icon">⏳</span> تنتظر الدفع
+        <span class="snav-badge" id="pendingBadge" style="display:none">0</span>
+      </button>
+      <button class="snav-item" data-page="bookings" onclick="goPage('bookings',this)">
+        <span class="snav-icon">📋</span> كل الحجوزات
+      </button>
+      <div class="snav-section admin-only" style="display:none">الإدارة</div>
+      <button class="snav-item admin-only" style="display:none" data-page="offices" onclick="goPage('offices',this)">
+        <span class="snav-icon">🏢</span> المكاتب الشريكة
+      </button>
+      <button class="snav-item admin-only" style="display:none" data-page="reports" onclick="goPage('reports',this)">
+        <span class="snav-icon">📈</span> التقارير
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" onclick="doLogout()">🚪 خروج</button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- ══ DASHBOARD ══ -->
+    <div id="pg-dashboard">
+      <div class="topbar">
+        <h1>📊 لوحة التحكم</h1>
+        <button class="btn btn-blue" onclick="goPage('new-booking')">➕ حجز جديد</button>
+      </div>
+      <!-- pending alert -->
+      <div class="pending-alert" id="pendingAlertBox" style="display:none">
+        <div>
+          <div class="pa-text">⚠️ حجوزات تنتظر تأكيد الدفع</div>
+          <div style="font-size:0.78rem;color:#92400e;margin-top:3px">اضغط لمراجعتها وإرسال التذاكر</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px">
+          <div class="pa-num" id="pendingCount">0</div>
+          <button class="btn btn-orange btn-sm" onclick="goPage('pending')">مراجعة ⟵</button>
+        </div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-icon si-blue">📋</div><div><div class="stat-num" id="stAll">—</div><div class="stat-lbl">إجمالي الحجوزات</div></div></div>
+        <div class="stat-card"><div class="stat-icon si-green">✅</div><div><div class="stat-num" id="stConf">—</div><div class="stat-lbl">مؤكدة ومدفوعة</div></div></div>
+        <div class="stat-card"><div class="stat-icon si-gold">⏳</div><div><div class="stat-num" id="stPend">—</div><div class="stat-lbl">تنتظر الدفع</div></div></div>
+        <div class="stat-card"><div class="stat-icon si-orange">💰</div><div><div class="stat-num" id="stRev">—</div><div class="stat-lbl">إجمالي الإيرادات</div></div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">📋 آخر الحجوزات</div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>التذكرة</th><th>العميل</th><th>الرحلة</th><th>التاريخ</th><th>المبلغ</th><th>الدفع</th><th>الحالة</th><th>إجراء</th></tr></thead>
+          <tbody id="dashTbody"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ══ NEW BOOKING ══ -->
+    <div id="pg-new-booking" style="display:none">
+      <div class="topbar"><h1>➕ حجز جديد</h1></div>
+      <div id="nbAlert" style="display:none" class="alert"></div>
+      <div class="card">
+        <div class="card-title">👤 بيانات العميل</div>
+        <div class="form-grid">
+          <div class="fg"><label>الاسم الكامل *</label><input type="text" id="bName" placeholder="اسم العميل"></div>
+          <div class="fg"><label>الهاتف / واتساب</label><input type="text" id="bPhone" placeholder="+49 ..."></div>
+          <div class="fg"><label>البريد الإلكتروني</label><input type="email" id="bEmail" placeholder="email@example.com"></div>
+          <div class="fg"><label>الجنسية</label><input type="text" id="bNat" placeholder="German / Russian ..."></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">🎯 تفاصيل الرحلة</div>
+        <div class="form-grid">
+          <div class="fg full"><label>الرحلة *</label>
+            <select id="bTrip" onchange="calcPrice()">
+              <option value="">اختر الرحلة...</option>
+              <optgroup label="🌊 رحلات بحرية">
+                <option value="غواصة سي سكوب|15">غواصة سي سكوب — $15</option>
+                <option value="دولفين هاوس|25">دولفين هاوس — $25</option>
+                <option value="جزيرة باراديس / هولا هولا|40">جزيرة باراديس / هولا هولا — $40</option>
+                <option value="جزيرة أورنج باي|35">جزيرة أورنج باي — $35</option>
+                <option value="رحلة الغطس|30">رحلة الغطس — $30</option>
+                <option value="عرض الدولفين|15">عرض الدولفين — $15</option>
+              </optgroup>
+              <optgroup label="🏜️ سفاري">
+                <option value="سفاري فاميلي|18">سفاري فاميلي — $18</option>
+                <option value="سفاري 3 ساعات|20">سفاري 3 ساعات — $20</option>
+                <option value="سوبر سفاري|22">سوبر سفاري — $22</option>
+              </optgroup>
+              <optgroup label="🏙️ جولات">
+                <option value="جولة المدينة|20">جولة المدينة — $20</option>
+              </optgroup>
+              <optgroup label="⭐ باقات">
+                <option value="باقة البحر|85">باقة البحر — $85</option>
+                <option value="باقة بحر + سفاري|130">باقة بحر + سفاري — $130</option>
+                <option value="الباقة الملكية VIP|200">الباقة الملكية VIP — $200</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="fg"><label>تاريخ الرحلة *</label><input type="date" id="bDate"></div>
+          <div class="fg"><label>وقت الانطلاق</label><input type="time" id="bTime" value="09:00"></div>
+          <div class="fg"><label>عدد البالغين *</label><input type="number" id="bAdults" value="1" min="1" onchange="calcPrice()"></div>
+          <div class="fg"><label>عدد الأطفال (3-11)</label><input type="number" id="bChildren" value="0" min="0" onchange="calcPrice()"></div>
+          <div class="fg"><label>إجمالي السعر (USD) *</label><input type="number" id="bPrice" placeholder="0" step="0.5"></div>
+          <div class="fg full"><label>ملاحظات</label><input type="text" id="bNotes" placeholder="أي تفاصيل إضافية..."></div>
+        </div>
+        <div style="margin-top:8px;padding:12px;background:#f0f9ff;border-radius:8px;font-size:0.85rem;color:#0369a1">
+          💡 <strong>ملاحظة:</strong> التذكرة ستُرسل للعميل فقط بعد تأكيد الدفع
+        </div>
+        <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+          <button class="btn btn-blue" onclick="createBooking()">📥 حفظ الحجز</button>
+          <button class="btn btn-outline" onclick="clearForm()">🔄 مسح</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PENDING PAYMENTS ══ -->
+    <div id="pg-pending" style="display:none">
+      <div class="topbar"><h1>⏳ تنتظر تأكيد الدفع</h1></div>
+      <div class="card">
+        <div class="card-title">💰 حجوزات لم يتم تأكيد دفعها بعد</div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>التذكرة</th><th>العميل</th><th>الرحلة</th><th>التاريخ</th><th>المبلغ</th><th>الهاتف</th><th>إجراء</th></tr></thead>
+          <tbody id="pendingTbody"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ══ ALL BOOKINGS ══ -->
+    <div id="pg-bookings" style="display:none">
+      <div class="topbar">
+        <h1>📋 كل الحجوزات</h1>
+        <button class="btn btn-blue" onclick="goPage('new-booking')">➕ جديد</button>
+      </div>
+      <div class="card">
+        <div class="filters">
+          <input type="text" id="srch" placeholder="🔍 بحث..." style="flex:1;min-width:180px" oninput="filterB()">
+          <select id="sfStatus" onchange="filterB()">
+            <option value="">كل الحالات</option>
+            <option value="pending">⏳ انتظار</option>
+            <option value="confirmed">✅ مؤكد</option>
+            <option value="cancelled">❌ ملغي</option>
+          </select>
+          <select id="sfPay" onchange="filterB()">
+            <option value="">كل الدفع</option>
+            <option value="unpaid">غير مدفوع</option>
+            <option value="paid">مدفوع</option>
+          </select>
+          <input type="date" id="sfDate" onchange="filterB()">
+          <button class="btn btn-outline btn-sm" onclick="loadBookings()">🔄</button>
+        </div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>التذكرة</th><th>العميل</th><th>الرحلة</th><th>التاريخ</th><th>أفراد</th><th>المبلغ</th><th>الدفع</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+          <tbody id="bookTbody"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ══ OFFICES ══ -->
+    <div id="pg-offices" style="display:none">
+      <div class="topbar">
+        <h1>🏢 المكاتب الشريكة</h1>
+        <button class="btn btn-blue" onclick="toggleAddOffice()">➕ مكتب جديد</button>
+      </div>
+      <div id="officeAlert" style="display:none" class="alert"></div>
+      <div class="card" id="addOfficeCard" style="display:none">
+        <div class="card-title">➕ إضافة مكتب جديد</div>
+        <div class="form-grid">
+          <div class="fg"><label>اسم المكتب *</label><input type="text" id="oName" placeholder="Berlin Travel GmbH"></div>
+          <div class="fg"><label>الدولة</label><select id="oCountry"><option>Germany</option><option>Russia</option><option>UAE</option><option>UK</option><option>Other</option></select></div>
+          <div class="fg"><label>البريد الإلكتروني</label><input type="email" id="oEmail" placeholder="office@example.com"></div>
+          <div class="fg"><label>اسم المستخدم *</label><input type="text" id="oUser" placeholder="berlin_office"></div>
+          <div class="fg"><label>كلمة المرور *</label><input type="text" id="oPass" placeholder="كلمة مرور قوية"></div>
+          <div class="fg"><label>نسبة العمولة %</label><input type="number" id="oComm" value="10" min="0" max="50"></div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:12px">
+          <button class="btn btn-green" onclick="addOffice()">✅ حفظ</button>
+          <button class="btn btn-outline" onclick="toggleAddOffice()">إلغاء</button>
+        </div>
+      </div>
+      <div class="office-grid" id="officeGrid"></div>
+    </div>
+
+    <!-- ══ REPORTS ══ -->
+    <div id="pg-reports" style="display:none">
+      <div class="topbar"><h1>📈 التقارير</h1></div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-icon si-blue">📅</div><div><div class="stat-num" id="rToday">—</div><div class="stat-lbl">حجوزات اليوم</div></div></div>
+        <div class="stat-card"><div class="stat-icon si-green">📆</div><div><div class="stat-num" id="rMonth">—</div><div class="stat-lbl">حجوزات الشهر</div></div></div>
+        <div class="stat-card"><div class="stat-icon si-gold">💵</div><div><div class="stat-num" id="rRevM">—</div><div class="stat-lbl">إيرادات الشهر</div></div></div>
+        <div class="stat-card"><div class="stat-icon si-purple">🏢</div><div><div class="stat-num" id="rOff">—</div><div class="stat-lbl">مكاتب شريكة</div></div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🏆 أكثر الرحلات حجزاً</div>
+        <div id="topTrips"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🏢 أداء المكاتب</div>
+        <div id="officePerf"></div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ══ PAYMENT CONFIRM MODAL ══ -->
+<div class="overlay" id="payModal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h3>💰 تأكيد الدفع وإرسال التذكرة</h3>
+      <button class="modal-close" onclick="closeModal('payModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="payInfo" style="background:#f8fafc;border-radius:8px;padding:14px;margin-bottom:16px;font-size:0.88rem"></div>
+      <div class="fg"><label>طريقة الدفع</label>
+        <div class="pay-methods">
+          <div class="pay-method" onclick="selPayMethod(this,'cash')"><div class="pm-icon">💵</div><div class="pm-name">كاش</div></div>
+          <div class="pay-method" onclick="selPayMethod(this,'whatsapp')"><div class="pm-icon">💬</div><div class="pm-name">واتساب</div></div>
+          <div class="pay-method" onclick="selPayMethod(this,'bank')"><div class="pm-icon">🏦</div><div class="pm-name">تحويل بنكي</div></div>
+          <div class="pay-method" onclick="selPayMethod(this,'card')"><div class="pm-icon">💳</div><div class="pm-name">بطاقة</div></div>
+        </div>
+      </div>
+      <div class="fg"><label>ملاحظة الدفع (اختياري)</label><input type="text" id="payNote" placeholder="رقم إيصال أو أي ملاحظة..."></div>
+      <input type="hidden" id="payBookingId">
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-green" onclick="confirmPayment()">✅ تأكيد الدفع وإرسال التذكرة</button>
+        <button class="btn btn-outline" onclick="closeModal('payModal')">إلغاء</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TICKET MODAL ══ -->
+<div class="overlay" id="ticketModal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h3>🎫 التذكرة</h3>
+      <button class="modal-close" onclick="closeModal('ticketModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="ticket" id="ticketEl">
+        <div class="ticket-hdr"><h2>🌊 PUER HURGHADA</h2><p>للسياحة والمغامرات — الغردقة، مصر</p></div>
+        <div class="ticket-num" id="tNum">—</div>
+        <div class="ticket-status-bar paid" id="tStatusBar">✅ مدفوع ومؤكد</div>
+        <div class="ticket-body">
+          <div class="t-row"><span class="t-lbl">👤 العميل</span><span class="t-val" id="tName">—</span></div>
+          <div class="t-row"><span class="t-lbl">🌍 الجنسية</span><span class="t-val" id="tNat">—</span></div>
+          <div class="t-row"><span class="t-lbl">🎯 الرحلة</span><span class="t-val" id="tTrip">—</span></div>
+          <div class="t-row"><span class="t-lbl">📅 التاريخ</span><span class="t-val" id="tDate">—</span></div>
+          <div class="t-row"><span class="t-lbl">🕐 الوقت</span><span class="t-val" id="tTime">—</span></div>
+          <div class="t-row"><span class="t-lbl">👥 البالغين</span><span class="t-val" id="tAdults">—</span></div>
+          <div class="t-row"><span class="t-lbl">👶 الأطفال</span><span class="t-val" id="tChildren">—</span></div>
+          <div class="t-row"><span class="t-lbl">📞 الهاتف</span><span class="t-val" id="tPhone">—</span></div>
+          <div class="t-row"><span class="t-lbl">💳 طريقة الدفع</span><span class="t-val" id="tPayMethod">—</span></div>
+        </div>
+        <div class="ticket-total"><span class="lbl">💰 الإجمالي المدفوع</span><span class="val" id="tPrice">—</span></div>
+        <div class="ticket-qr"><div id="qrcode" style="display:inline-block"></div><p>امسح الكود للتحقق من التذكرة</p></div>
+        <div class="ticket-footer">📞 +20 112 075 4155 &nbsp;|&nbsp; Puer Hurghada © 2025 &nbsp;|&nbsp; الغردقة، مصر</div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+        <button class="btn btn-blue" onclick="window.print()">🖨️ طباعة</button>
+        <button class="btn btn-wa" onclick="shareTicketWA()">💬 واتساب</button>
+        <button class="btn btn-outline" onclick="closeModal('ticketModal')">إغلاق</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SB = 'https://yuzfknlkiwkhucrkcgqw.supabase.co';
+const SK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl1emZrbmxraXdraHVjcmtjZ3F3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjI4NTYsImV4cCI6MjA5Mzk5ODg1Nn0.3xY6ic4F-RG3DxkXBvUm5Ksi5_B__jn7l632cRYAFNc';
+const WA = '201120754155';
+let CU = null; // current user
+let allB = []; // all bookings
+let curTicket = null;
+let selMethod = '';
+
+// ── SUPABASE ──
+async function db(method, table, body=null, qs='') {
+  const r = await fetch(`${SB}/rest/v1/${table}${qs}`, {
+    method,
+    headers: {
+      'apikey': SK,
+      'Authorization': 'Bearer ' + SK,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation'
+    },
+    body: body ? JSON.stringify(body) : null
+  });
+  const t = await r.text();
+  if (!r.ok) throw new Error(t);
+  return t ? JSON.parse(t) : [];
+}
+
+// ── LOGIN ──
+let lt = 'admin';
+function setLT(t) {
+  lt = t;
+  document.querySelectorAll('.login-tab').forEach((el,i) =>
+    el.classList.toggle('active',(i===0&&t==='admin')||(i===1&&t==='office')));
+}
+async function doLogin() {
+  const u = document.getElementById('lUser').value.trim();
+  const p = document.getElementById('lPass').value.trim();
+  const err = document.getElementById('loginErr');
+  err.style.display = 'none';
+  if (!u||!p) { err.textContent='أدخل البيانات'; err.style.display='block'; return; }
+  try {
+    const rows = await db('GET','offices',null,`?username=eq.${encodeURIComponent(u)}&password=eq.${encodeURIComponent(p)}`);
+    if (!rows.length) { err.textContent='بيانات غلط'; err.style.display='block'; return; }
+    CU = { ...rows[0], isAdmin: rows[0].commission_percent === 0 };
+    startApp();
+  } catch(e) { err.textContent='خطأ: '+e.message; err.style.display='block'; }
+}
+function startApp() {
+  document.getElementById('loginWrap').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  document.getElementById('sUser').textContent = CU.name;
+  document.getElementById('sRole').textContent = CU.isAdmin ? '👑 أدمن — Puer Hurghada' : '🏢 '+CU.name+' | '+CU.country;
+  if (CU.isAdmin) document.querySelectorAll('.admin-only').forEach(el=>el.style.display='');
+  document.getElementById('bDate').valueAsDate = new Date();
+  goPage('dashboard');
+}
+function doLogout() {
+  CU = null; allB = [];
+  document.getElementById('loginWrap').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+}
+
+// ── PAGES ──
+function goPage(pg, btn) {
+  document.querySelectorAll('[id^="pg-"]').forEach(el=>el.style.display='none');
+  const el = document.getElementById('pg-'+pg);
+  if (el) el.style.display = 'block';
+  document.querySelectorAll('.snav-item').forEach(el=>el.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  else { const b = document.querySelector(`[data-page="${pg}"]`); if(b) b.classList.add('active'); }
+  if (pg==='dashboard') loadDashboard();
+  else if (pg==='pending') loadPending();
+  else if (pg==='bookings') loadBookings();
+  else if (pg==='offices') loadOffices();
+  else if (pg==='reports') loadReports();
+}
+
+// ── DASHBOARD ──
+async function loadDashboard() {
+  try {
+    const qs = CU.isAdmin ? '?order=created_at.desc&limit=8' : `?office_id=eq.${CU.id}&order=created_at.desc&limit=8`;
+    const rows = await db('GET','bookings',null,qs);
+    const allQs = CU.isAdmin ? '?select=status,payment_status,total_price' : `?office_id=eq.${CU.id}&select=status,payment_status,total_price`;
+    const all = await db('GET','bookings',null,allQs);
+    const pending = all.filter(b=>b.payment_status==='unpaid'&&b.status!=='cancelled');
+    document.getElementById('stAll').textContent = all.length;
+    document.getElementById('stConf').textContent = all.filter(b=>b.payment_status==='paid').length;
+    document.getElementById('stPend').textContent = pending.length;
+    document.getElementById('stRev').textContent = '$'+all.filter(b=>b.payment_status==='paid').reduce((s,b)=>s+parseFloat(b.total_price||0),0).toFixed(0);
+    // pending badge
+    const badge = document.getElementById('pendingBadge');
+    const pBox = document.getElementById('pendingAlertBox');
+    document.getElementById('pendingCount').textContent = pending.length;
+    if (pending.length > 0) { badge.textContent=pending.length; badge.style.display=''; pBox.style.display='flex'; }
+    else { badge.style.display='none'; pBox.style.display='none'; }
+    renderDashTable(rows);
+  } catch(e) { console.error(e); }
+}
+
+function renderDashTable(rows) {
+  const tb = document.getElementById('dashTbody');
+  if (!rows.length) { tb.innerHTML='<tr><td colspan="8"><div class="empty"><div class="ei">📭</div><p>لا توجد حجوزات بعد</p></div></td></tr>'; return; }
+  tb.innerHTML = rows.map(b=>`<tr>
+    <td><strong style="color:var(--blue);font-size:0.82rem">${b.ticket_number}</strong></td>
+    <td>${b.customer_name}</td><td>${b.trip_name}</td><td>${b.trip_date}</td>
+    <td>$${b.total_price}</td>
+    <td>${payBadge(b.payment_status)}</td>
+    <td>${statusBadge(b.status)}</td>
+    <td style="display:flex;gap:5px">
+      ${b.payment_status==='unpaid'&&b.status!=='cancelled'
+        ? `<button class="btn btn-orange btn-sm" onclick="openPayModal('${b.id}')">💰 دفع</button>`
+        : `<button class="btn btn-gold btn-sm" onclick="openTicket('${b.id}')">🎫</button>`}
+    </td>
+  </tr>`).join('');
+}
+
+// ── PENDING ──
+async function loadPending() {
+  try {
+    const qs = CU.isAdmin
+      ? '?payment_status=eq.unpaid&status=neq.cancelled&order=created_at.asc'
+      : `?office_id=eq.${CU.id}&payment_status=eq.unpaid&status=neq.cancelled&order=created_at.asc`;
+    const rows = await db('GET','bookings',null,qs);
+    const tb = document.getElementById('pendingTbody');
+    if (!rows.length) { tb.innerHTML='<tr><td colspan="7"><div class="empty"><div class="ei">🎉</div><p>لا توجد حجوزات معلقة</p></div></td></tr>'; return; }
+    tb.innerHTML = rows.map(b=>`<tr>
+      <td><strong style="color:var(--blue);font-size:0.82rem">${b.ticket_number}</strong></td>
+      <td>${b.customer_name}</td><td>${b.trip_name}</td><td>${b.trip_date}</td>
+      <td><strong>$${b.total_price}</strong></td>
+      <td><a href="https://wa.me/${b.customer_phone?b.customer_phone.replace(/\D/g,''):WA}" target="_blank" style="color:var(--green)">${b.customer_phone||'—'}</a></td>
+      <td style="display:flex;gap:5px;flex-wrap:wrap">
+        <button class="btn btn-green btn-sm" onclick="openPayModal('${b.id}')">✅ تأكيد الدفع</button>
+        <button class="btn btn-wa btn-sm" onclick="sendPaymentReminder('${b.id}')">💬 تذكير</button>
+        <button class="btn btn-red btn-sm" onclick="cancelBooking('${b.id}')">❌</button>
+      </td>
+    </tr>`).join('');
+  } catch(e) { console.error(e); }
+}
+
+// ── ALL BOOKINGS ──
+async function loadBookings() {
+  try {
+    const qs = CU.isAdmin ? '?order=created_at.desc' : `?office_id=eq.${CU.id}&order=created_at.desc`;
+    allB = await db('GET','bookings',null,qs);
+    renderBookings(allB);
+  } catch(e) { console.error(e); }
+}
+
+function renderBookings(rows) {
+  const tb = document.getElementById('bookTbody');
+  if (!rows.length) { tb.innerHTML='<tr><td colspan="9"><div class="empty"><div class="ei">📭</div><p>لا توجد حجوزات</p></div></td></tr>'; return; }
+  tb.innerHTML = rows.map(b=>`<tr>
+    <td><strong style="color:var(--blue);font-size:0.8rem">${b.ticket_number}</strong></td>
+    <td>${b.customer_name}<br><small style="color:var(--gray)">${b.customer_phone||''}</small></td>
+    <td style="font-size:0.83rem">${b.trip_name}</td><td>${b.trip_date}</td>
+    <td>${b.adults}👤${b.children>0?' '+b.children+'👶':''}</td>
+    <td><strong>$${b.total_price}</strong></td>
+    <td>${payBadge(b.payment_status)}</td>
+    <td>${statusBadge(b.status)}</td>
+    <td style="display:flex;gap:4px;flex-wrap:wrap">
+      ${b.payment_status==='unpaid'&&b.status!=='cancelled'
+        ? `<button class="btn btn-orange btn-sm" onclick="openPayModal('${b.id}')">💰</button>`
+        : `<button class="btn btn-gold btn-sm" onclick="openTicket('${b.id}')">🎫</button>`}
+      ${CU.isAdmin&&b.status!=='cancelled'?`<button class="btn btn-red btn-sm" onclick="cancelBooking('${b.id}')">❌</button>`:''}
+    </td>
+  </tr>`).join('');
+}
+
+function filterB() {
+  const q = document.getElementById('srch').value.toLowerCase();
+  const st = document.getElementById('sfStatus').value;
+  const py = document.getElementById('sfPay').value;
+  const dt = document.getElementById('sfDate').value;
+  renderBookings(allB.filter(b=>
+    (!q || b.customer_name.toLowerCase().includes(q) || b.ticket_number.toLowerCase().includes(q) || b.trip_name.toLowerCase().includes(q)) &&
+    (!st || b.status===st) && (!py || b.payment_status===py) && (!dt || b.trip_date===dt)
+  ));
+}
+
+// ── CREATE BOOKING ──
+function calcPrice() {
+  const v = document.getElementById('bTrip').value;
+  if (!v) return;
+  const base = parseFloat(v.split('|')[1])||0;
+  const adults = parseInt(document.getElementById('bAdults').value)||1;
+  const children = parseInt(document.getElementById('bChildren').value)||0;
+  document.getElementById('bPrice').value = (base*adults + base*0.5*children).toFixed(0);
+}
+
+function genTN() {
+  const d = new Date();
+  return 'PH'+d.getFullYear().toString().slice(2)+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'-'+Math.floor(Math.random()*9000+1000);
+}
+
+async function createBooking() {
+  const name = document.getElementById('bName').value.trim();
+  const trip = document.getElementById('bTrip').value;
+  const date = document.getElementById('bDate').value;
+  const price = document.getElementById('bPrice').value;
+  const al = document.getElementById('nbAlert');
+  al.style.display='none';
+  if (!name||!trip||!date||!price) {
+    al.className='alert alert-error'; al.textContent='⚠️ اكمل البيانات المطلوبة (*)'; al.style.display='block'; return;
+  }
+  try {
+    const bk = {
+      ticket_number: genTN(),
+      office_id: CU.id,
+      customer_name: name,
+      customer_phone: document.getElementById('bPhone').value.trim(),
+      customer_email: document.getElementById('bEmail').value.trim(),
+      nationality: document.getElementById('bNat').value.trim(),
+      trip_name: trip.split('|')[0],
+      trip_date: date,
+      trip_time: document.getElementById('bTime').value,
+      adults: parseInt(document.getElementById('bAdults').value)||1,
+      children: parseInt(document.getElementById('bChildren').value)||0,
+      total_price: parseFloat(price),
+      status: 'pending',
+      payment_status: 'unpaid',
+      notes: document.getElementById('bNotes').value.trim()
+    };
+    await db('POST','bookings',bk);
+    al.className='alert alert-success';
+    al.textContent=`✅ تم حفظ الحجز! رقم: ${bk.ticket_number} — سيتم إرسال التذكرة بعد تأكيد الدفع`;
+    al.style.display='block';
+    // send WA notification to admin
+    const msg = `🔔 *حجز جديد — Puer Hurghada*\n\nالعميل: ${name}\nالرحلة: ${bk.trip_name}\nالتاريخ: ${date}\nالمبلغ: $${price}\nالتذكرة: ${bk.ticket_number}\n\n⚠️ ينتظر تأكيد الدفع`;
+    window.open(`https://wa.me/${WA}?text=${encodeURIComponent(msg)}`, '_blank');
+    clearForm();
+  } catch(e) { al.className='alert alert-error'; al.textContent='خطأ: '+e.message; al.style.display='block'; }
+}
+
+function clearForm() {
+  ['bName','bPhone','bEmail','bNat','bNotes','bPrice'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('bTrip').value='';
+  document.getElementById('bAdults').value='1';
+  document.getElementById('bChildren').value='0';
+  document.getElementById('bDate').valueAsDate=new Date();
+  document.getElementById('bTime').value='09:00';
+}
+
+// ── PAYMENT CONFIRM ──
+let payBooking = null;
+function selPayMethod(el, m) {
+  document.querySelectorAll('.pay-method').forEach(x=>x.classList.remove('selected'));
+  el.classList.add('selected'); selMethod = m;
+}
+
+async function openPayModal(id) {
+  try {
+    const rows = await db('GET','bookings',null,`?id=eq.${id}`);
+    if (!rows.length) return;
+    payBooking = rows[0];
+    document.getElementById('payBookingId').value = id;
+    document.getElementById('payInfo').innerHTML = `
+      <strong>👤 ${payBooking.customer_name}</strong><br>
+      🎯 ${payBooking.trip_name} &nbsp;|&nbsp; 📅 ${payBooking.trip_date}<br>
+      💰 <strong style="color:var(--gold);font-size:1.1rem">$${payBooking.total_price}</strong>
+      ${payBooking.customer_phone?`&nbsp;|&nbsp; 📞 ${payBooking.customer_phone}`:''}`;
+    selMethod = '';
+    document.querySelectorAll('.pay-method').forEach(x=>x.classList.remove('selected'));
+    document.getElementById('payNote').value='';
+    document.getElementById('payModal').classList.add('show');
+  } catch(e) { alert('خطأ: '+e.message); }
+}
+
+async function confirmPayment() {
+  if (!selMethod) { alert('اختر طريقة الدفع'); return; }
+  const id = document.getElementById('payBookingId').value;
+  const note = document.getElementById('payNote').value.trim();
+  try {
+    const updated = await db('PATCH','bookings',{
+      payment_status: 'paid',
+      status: 'confirmed',
+      payment_method: selMethod,
+      payment_note: note,
+      confirmed_at: new Date().toISOString()
+    }, `?id=eq.${id}`);
+    closeModal('payModal');
+    const b = updated[0] || payBooking;
+    b.payment_status='paid'; b.status='confirmed'; b.payment_method=selMethod;
+    openTicket(id, b);
+    loadDashboard();
+    loadPending();
+  } catch(e) { alert('خطأ: '+e.message); }
+}
+
+async function cancelBooking(id) {
+  if (!confirm('تلغي الحجز ده؟')) return;
+  try {
+    await db('PATCH','bookings',{status:'cancelled'},`?id=eq.${id}`);
+    loadPending(); loadBookings(); loadDashboard();
+  } catch(e) { alert('خطأ: '+e.message); }
+}
+
+async function sendPaymentReminder(id) {
+  try {
+    const rows = await db('GET','bookings',null,`?id=eq.${id}`);
+    if (!rows.length) return;
+    const b = rows[0];
+    const phone = b.customer_phone ? b.customer_phone.replace(/\D/g,'') : WA;
+    const msg = `مرحباً ${b.customer_name} 👋\n\nنذكرك بحجزك مع *Puer Hurghada*\n\n🎯 الرحلة: ${b.trip_name}\n📅 التاريخ: ${b.trip_date}\n💰 المبلغ: $${b.total_price}\n🎫 رقم الحجز: ${b.ticket_number}\n\nيرجى تأكيد الدفع لإتمام الحجز وإرسال التذكرة.\n\n📞 +20 112 075 4155`;
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+  } catch(e) { alert('خطأ: '+e.message); }
+}
+
+// ── TICKET ──
+async function openTicket(id, bData) {
+  try {
+    const b = bData || (await db('GET','bookings',null,`?id=eq.${id}`))[0];
+    if (!b) return;
+    curTicket = b;
+    document.getElementById('tNum').textContent = '🎫 ' + b.ticket_number;
+    document.getElementById('tName').textContent = b.customer_name;
+    document.getElementById('tNat').textContent = b.nationality || '—';
+    document.getElementById('tTrip').textContent = b.trip_name;
+    document.getElementById('tDate').textContent = b.trip_date;
+    document.getElementById('tTime').textContent = b.trip_time || '09:00';
+    document.getElementById('tAdults').textContent = b.adults + ' بالغ';
+    document.getElementById('tChildren').textContent = (b.children||0) + ' طفل';
+    document.getElementById('tPhone').textContent = b.customer_phone || '—';
+    const pm = {cash:'💵 كاش', whatsapp:'💬 واتساب', bank:'🏦 تحويل بنكي', card:'💳 بطاقة'};
+    document.getElementById('tPayMethod').textContent = pm[b.payment_method] || b.payment_method || '—';
+    document.getElementById('tPrice').textContent = '$' + b.total_price;
+    const sb = document.getElementById('tStatusBar');
+    if (b.payment_status==='paid') { sb.className='ticket-status-bar paid'; sb.textContent='✅ مدفوع ومؤكد'; }
+    else { sb.className='ticket-status-bar'; sb.style.background='#fef9c3'; sb.style.color='#854d0e'; sb.textContent='⏳ في انتظار الدفع'; }
+    const qr = document.getElementById('qrcode');
+    qr.innerHTML = '';
+    new QRCode(qr, {
+      text: `PUER|${b.ticket_number}|${b.customer_name}|${b.trip_name}|${b.trip_date}|$${b.total_price}`,
+      width: 120, height: 120, colorDark:'#1a4a6b', colorLight:'#ffffff'
+    });
+    document.getElementById('ticketModal').classList.add('show');
+  } catch(e) { alert('خطأ: '+e.message); }
+}
+
+function shareTicketWA() {
+  if (!curTicket) return;
+  const b = curTicket;
+  const pm = {cash:'كاش', whatsapp:'واتساب', bank:'تحويل بنكي', card:'بطاقة'};
+  const msg = `🎫 *تذكرة Puer Hurghada*\n\n`+
+    `رقم التذكرة: *${b.ticket_number}*\n`+
+    `👤 العميل: ${b.customer_name}\n`+
+    `🎯 الرحلة: ${b.trip_name}\n`+
+    `📅 التاريخ: ${b.trip_date}\n`+
+    `🕐 الوقت: ${b.trip_time||'09:00'}\n`+
+    `👥 ${b.adults} بالغ${b.children>0?' + '+b.children+' أطفال':''}\n`+
+    `💰 المبلغ: *$${b.total_price}*\n`+
+    `✅ الدفع: ${pm[b.payment_method]||'—'}\n\n`+
+    `📞 +20 112 075 4155\n`+
+    `_Puer Hurghada للسياحة والمغامرات — الغردقة_`;
+  const phone = b.customer_phone ? b.customer_phone.replace(/\D/g,'') : WA;
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+// ── OFFICES ──
+async function loadOffices() {
+  if (!CU.isAdmin) return;
+  try {
+    const offices = await db('GET','offices',null,'?order=created_at.asc');
+    const allBk = await db('GET','bookings',null,'?select=office_id,total_price,payment_status');
+    const flags = {Germany:'🇩🇪',Russia:'🇷🇺',UAE:'🇦🇪',UK:'🇬🇧',Egypt:'🇪🇬',Other:'🌍'};
+    document.getElementById('officeGrid').innerHTML = offices.map(o=>{
+      const obs = allBk.filter(b=>b.office_id===o.id);
+      const paid = obs.filter(b=>b.payment_status==='paid');
+      const rev = paid.reduce((s,b)=>s+parseFloat(b.total_price||0),0);
+      const comm = rev * (o.commission_percent/100);
+      return `<div class="office-card">
+        <div class="office-flag">${flags[o.country]||'🌍'}</div>
+        <div class="office-name">${o.name}</div>
+        <div class="office-sub">${o.country} ${o.commission_percent===0?'👑 Admin':''}</div>
+        <div class="office-stats">
+          <div class="os-item"><div class="os-n">${obs.length}</div><div class="os-l">حجوزات</div></div>
+          <div class="os-item"><div class="os-n">$${rev.toFixed(0)}</div><div class="os-l">إيرادات</div></div>
+          <div class="os-item"><div class="os-n">$${comm.toFixed(0)}</div><div class="os-l">عمولة ${o.commission_percent}%</div></div>
+        </div>
+        <div class="office-creds">👤 <span>${o.username}</span> &nbsp;|&nbsp; 🔑 <span>${o.password}</span></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-outline btn-sm" onclick="viewOfficeBookings('${o.id}')">📋 حجوزاته</button>
+          ${o.commission_percent!==0?`<button class="btn btn-red btn-sm" onclick="delOffice('${o.id}')">🗑️</button>`:''}
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) { console.error(e); }
+}
+
+function toggleAddOffice() {
+  const c = document.getElementById('addOfficeCard');
+  c.style.display = c.style.display==='none'?'block':'none';
+}
+
+async function addOffice() {
+  const name=document.getElementById('oName').value.trim();
+  const user=document.getElementById('oUser').value.trim();
+  const pass=document.getElementById('oPass').value.trim();
+  if (!name||!user||!pass) { alert('اكمل البيانات'); return; }
+  try {
+    await db('POST','offices',{
+      name, country:document.getElementById('oCountry').value,
+      email:document.getElementById('oEmail').value.trim(),
+      username:user, password:pass,
+      commission_percent:parseInt(document.getElementById('oComm').value)||10
+    });
+    const al=document.getElementById('officeAlert');
+    al.className='alert alert-success'; al.textContent='✅ تم إضافة المكتب!'; al.style.display='block';
+    toggleAddOffice(); loadOffices();
+    setTimeout(()=>al.style.display='none',3000);
+  } catch(e) { alert('خطأ: '+e.message); }
+}
+
+async function delOffice(id) {
+  if (!confirm('حذف المكتب؟')) return;
+  await db('DELETE','offices',null,`?id=eq.${id}`);
+  loadOffices();
+}
+
+function viewOfficeBookings(oid) {
+  goPage('bookings');
+  setTimeout(async()=>{
+    allB = await db('GET','bookings',null,`?office_id=eq.${oid}&order=created_at.desc`);
+    renderBookings(allB);
+  },200);
+}
+
+// ── REPORTS ──
+async function loadReports() {
+  if (!CU.isAdmin) return;
+  try {
+    const all = await db('GET','bookings',null,'?select=trip_name,total_price,trip_date,payment_status,office_id');
+    const offices = await db('GET','offices',null,'?commission_percent=gt.0');
+    const today = new Date().toISOString().slice(0,10);
+    const month = today.slice(0,7);
+    const paid = all.filter(b=>b.payment_status==='paid');
+    document.getElementById('rToday').textContent = all.filter(b=>b.trip_date===today).length;
+    document.getElementById('rMonth').textContent = all.filter(b=>b.trip_date&&b.trip_date.startsWith(month)).length;
+    document.getElementById('rRevM').textContent = '$'+paid.filter(b=>b.trip_date&&b.trip_date.startsWith(month)).reduce((s,b)=>s+parseFloat(b.total_price||0),0).toFixed(0);
+    document.getElementById('rOff').textContent = offices.length;
+    const trips = {};
+    all.forEach(b=>{ trips[b.trip_name]=(trips[b.trip_name]||0)+1; });
+    document.getElementById('topTrips').innerHTML = Object.entries(trips).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([n,c])=>`
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f0f4f8">
+        <span style="font-weight:600">${n}</span>
+        <span style="background:#dbeafe;color:#1e40af;padding:3px 12px;border-radius:20px;font-weight:700">${c} حجز</span>
+      </div>`).join('') || '<p style="color:var(--gray);padding:16px">لا توجد بيانات</p>';
+    document.getElementById('officePerf').innerHTML = offices.map(o=>{
+      const obs = paid.filter(b=>b.office_id===o.id);
+      const rev = obs.reduce((s,b)=>s+parseFloat(b.total_price||0),0);
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f0f4f8">
+        <div><div style="font-weight:700">${o.name}</div><div style="font-size:0.78rem;color:var(--gray)">${o.country} — عمولة ${o.commission_percent}%</div></div>
+        <div style="text-align:center"><div style="font-weight:900;color:var(--blue)">${obs.length} حجز</div><div style="font-size:0.82rem;color:var(--gold)">$${rev.toFixed(0)}</div></div>
+      </div>`;
+    }).join('') || '<p style="color:var(--gray);padding:16px">لا توجد مكاتب</p>';
+  } catch(e) { console.error(e); }
+}
+
+// ── HELPERS ──
+function statusBadge(s) {
+  return {pending:'<span class="badge b-pending">⏳ انتظار</span>',confirmed:'<span class="badge b-confirmed">✅ مؤكد</span>',cancelled:'<span class="badge b-cancelled">❌ ملغي</span>'}[s]||s;
+}
+function payBadge(s) {
+  return s==='paid'?'<span class="badge b-paid">💰 مدفوع</span>':'<span class="badge b-unpaid">⏳ غير مدفوع</span>';
+}
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+document.querySelectorAll('.overlay').forEach(el=>el.addEventListener('click',function(e){ if(e.target===this) this.classList.remove('show'); }));
+</script>
+</body>
+</html>
