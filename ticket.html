@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تذكرة Puer Hurghada</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Tajawal',sans-serif;background:#e8f0f7;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+
+.ticket-wrap{width:100%;max-width:420px;}
+
+.ticket{background:white;border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.15);}
+
+.ticket-header{
+  background:linear-gradient(135deg,#1a4a6b,#0f2d45);
+  color:white;padding:24px 22px;text-align:center;
+}
+.ticket-header .logo{font-size:2.5rem;margin-bottom:8px;}
+.ticket-header h1{font-size:1.4rem;font-weight:900;margin-bottom:4px;}
+.ticket-header p{font-size:0.8rem;opacity:0.75;}
+
+.ticket-num{
+  background:#b8860b;color:white;
+  padding:12px;text-align:center;
+  font-size:1.2rem;font-weight:900;letter-spacing:3px;
+}
+
+.ticket-status{
+  padding:10px;text-align:center;
+  font-weight:700;font-size:0.9rem;
+}
+.status-paid{background:#dcfce7;color:#166534;}
+.status-pending{background:#fef9c3;color:#854d0e;}
+
+.ticket-body{padding:20px 22px;}
+.t-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:10px 0;border-bottom:1px dashed #e8e8e8;
+}
+.t-row:last-child{border-bottom:none;}
+.t-lbl{color:#6b7280;font-size:0.82rem;display:flex;align-items:center;gap:6px;}
+.t-val{font-weight:700;font-size:0.9rem;color:#1a4a6b;text-align:left;}
+
+.ticket-total{
+  background:#f8fafc;border-top:2px solid #1a4a6b;
+  padding:16px 22px;display:flex;justify-content:space-between;align-items:center;
+}
+.ticket-total .lbl{font-weight:800;font-size:1rem;color:#1a4a6b;}
+.ticket-total .val{font-size:1.5rem;font-weight:900;color:#b8860b;}
+
+.ticket-qr{
+  text-align:center;padding:20px;
+  border-top:2px dashed #ccc;background:#fafafa;
+}
+.ticket-qr p{font-size:0.75rem;color:#6b7280;margin-top:10px;}
+
+.ticket-footer{
+  background:#1a4a6b;color:rgba(255,255,255,0.7);
+  padding:12px 22px;text-align:center;font-size:0.75rem;
+}
+
+/* cut line */
+.cut-line{
+  display:flex;align-items:center;gap:8px;
+  margin:8px 0;color:#9ca3af;font-size:0.75rem;
+}
+.cut-line::before,.cut-line::after{content:'';flex:1;border-top:2px dashed #d1d5db;}
+
+/* actions */
+.actions{display:flex;gap:12px;margin-top:20px;flex-wrap:wrap;}
+.btn{
+  flex:1;padding:13px;border-radius:8px;border:none;
+  font-size:0.95rem;font-weight:700;cursor:pointer;
+  font-family:'Tajawal',sans-serif;transition:all 0.2s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  min-width:120px;
+}
+.btn-save{background:#1a4a6b;color:white;}
+.btn-save:hover{background:#0f2d45;}
+.btn-wa{background:#25d366;color:white;}
+.btn-wa:hover{background:#1ea855;}
+
+/* loading */
+.loading{text-align:center;padding:60px 20px;}
+.loading .spin{font-size:3rem;animation:spin 1s linear infinite;display:inline-block;}
+@keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}</style>
+/* error */
+.error-box{background:white;border-radius:16px;padding:40px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,0.1);}
+.error-box .icon{font-size:3rem;margin-bottom:14px;}
+.error-box h2{color:#dc2626;font-size:1.2rem;font-weight:800;margin-bottom:8px;}
+.error-box p{color:#6b7280;font-size:0.9rem;}
+</style>
+</head>
+<body>
+
+<div class="ticket-wrap">
+  <!-- Loading -->
+  <div class="loading" id="loadingEl">
+    <div class="spin">🌊</div>
+    <p style="margin-top:14px;color:#6b7280;font-size:0.95rem">جاري تحميل التذكرة...</p>
+  </div>
+
+  <!-- Error -->
+  <div class="error-box" id="errorEl" style="display:none">
+    <div class="icon">❌</div>
+    <h2>التذكرة غير موجودة</h2>
+    <p>رقم التذكرة غير صحيح أو تم حذفها</p>
+  </div>
+
+  <!-- Ticket -->
+  <div id="ticketEl" style="display:none">
+    <div class="ticket" id="ticketContent">
+      <div class="ticket-header">
+        <div class="logo">🌊</div>
+        <h1>PUER HURGHADA</h1>
+        <p>للسياحة والمغامرات — الغردقة، مصر</p>
+      </div>
+      <div class="ticket-num" id="tNum">—</div>
+      <div class="ticket-status" id="tStatus">—</div>
+      <div class="ticket-body">
+        <div class="t-row"><span class="t-lbl">👤 اسم العميل</span><span class="t-val" id="tName">—</span></div>
+        <div class="t-row"><span class="t-lbl">🌍 الجنسية</span><span class="t-val" id="tNat">—</span></div>
+        <div class="t-row"><span class="t-lbl">🎯 الرحلة</span><span class="t-val" id="tTrip">—</span></div>
+        <div class="t-row"><span class="t-lbl">📅 تاريخ الرحلة</span><span class="t-val" id="tDate">—</span></div>
+        <div class="t-row"><span class="t-lbl">🕐 وقت الانطلاق</span><span class="t-val" id="tTime">—</span></div>
+        <div class="t-row"><span class="t-lbl">👥 البالغين</span><span class="t-val" id="tAdults">—</span></div>
+        <div class="t-row"><span class="t-lbl">👶 الأطفال</span><span class="t-val" id="tChildren">—</span></div>
+        <div class="t-row"><span class="t-lbl">📞 الهاتف</span><span class="t-val" id="tPhone">—</span></div>
+        <div class="t-row"><span class="t-lbl">💳 طريقة الدفع</span><span class="t-val" id="tPay">—</span></div>
+      </div>
+      <div class="ticket-total">
+        <span class="lbl">💰 الإجمالي المدفوع</span>
+        <span class="val" id="tPrice">—</span>
+      </div>
+      <div class="cut-line">✂</div>
+      <div class="ticket-qr">
+        <div id="qrcode" style="display:inline-block"></div>
+        <p>امسح الكود للتحقق من صحة التذكرة</p>
+      </div>
+      <div class="ticket-footer">
+        📞 +20 112 075 4155 &nbsp;|&nbsp; puer-booking.netlify.app &nbsp;|&nbsp; © 2025
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-save" onclick="saveTicket()">💾 احفظ كصورة</button>
+      <button class="btn btn-wa" onclick="shareWA()">💬 شير واتساب</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+const SB  = 'https://yuzfknlkiwkhucrkcgqw.supabase.co';
+const SK  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl1emZrbmxraXdraHVjcmtjZ3F3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjI4NTYsImV4cCI6MjA5Mzk5ODg1Nn0.3xY6ic4F-RG3DxkXBvUm5Ksi5_B__jn7l632cRYAFNc';
+const WA  = '201120754155';
+
+let bk = null;
+
+async function loadTicket() {
+  const params = new URLSearchParams(window.location.search);
+  const ticketNum = params.get('id');
+
+  if (!ticketNum) { showError(); return; }
+
+  try {
+    const res = await fetch(`${SB}/rest/v1/bookings?ticket_number=eq.${encodeURIComponent(ticketNum)}`, {
+      headers: { 'apikey': SK, 'Authorization': 'Bearer ' + SK }
+    });
+    const data = await res.json();
+    if (!data.length) { showError(); return; }
+    bk = data[0];
+    renderTicket(bk);
+  } catch(e) { showError(); }
+}
+
+function renderTicket(b) {
+  document.getElementById('tNum').textContent    = '🎫 ' + b.ticket_number;
+  document.getElementById('tName').textContent   = b.customer_name;
+  document.getElementById('tNat').textContent    = b.nationality || '—';
+  document.getElementById('tTrip').textContent   = b.trip_name;
+  document.getElementById('tDate').textContent   = b.trip_date;
+  document.getElementById('tTime').textContent   = b.trip_time || '09:00 صباحاً';
+  document.getElementById('tAdults').textContent = b.adults + ' بالغ';
+  document.getElementById('tChildren').textContent = (b.children||0) + ' طفل';
+  document.getElementById('tPhone').textContent  = b.customer_phone || '—';
+  document.getElementById('tPrice').textContent  = '$' + b.total_price;
+
+  const pm = {cash:'💵 كاش', whatsapp:'💬 واتساب', bank:'🏦 تحويل بنكي', card:'💳 بطاقة'};
+  document.getElementById('tPay').textContent = pm[b.payment_method] || b.payment_method || '—';
+
+  const st = document.getElementById('tStatus');
+  if (b.payment_status === 'paid') {
+    st.className = 'ticket-status status-paid';
+    st.textContent = '✅ مدفوعة ومؤكدة';
+  } else {
+    st.className = 'ticket-status status-pending';
+    st.textContent = '⏳ في انتظار الدفع';
+  }
+
+  // QR code
+  document.getElementById('qrcode').innerHTML = '';
+  new QRCode(document.getElementById('qrcode'), {
+    text: b.ticket_number,
+    width: 130, height: 130,
+    colorDark: '#1a4a6b', colorLight: '#ffffff'
+  });
+
+  document.getElementById('loadingEl').style.display = 'none';
+  document.getElementById('ticketEl').style.display  = 'block';
+}
+
+function showError() {
+  document.getElementById('loadingEl').style.display = 'none';
+  document.getElementById('errorEl').style.display   = 'block';
+}
+
+async function saveTicket() {
+  try {
+    const el = document.getElementById('ticketContent');
+    const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+    const link = document.createElement('a');
+    link.download = `ticket-${bk.ticket_number}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  } catch(e) { alert('حدث خطأ أثناء الحفظ'); }
+}
+
+function shareWA() {
+  if (!bk) return;
+  const pm = {cash:'كاش', whatsapp:'واتساب', bank:'تحويل بنكي', card:'بطاقة'};
+  const msg =
+    `🎫 *تذكرة Puer Hurghada*\n\n` +
+    `رقم التذكرة: *${bk.ticket_number}*\n` +
+    `👤 العميل: ${bk.customer_name}\n` +
+    `🎯 الرحلة: ${bk.trip_name}\n` +
+    `📅 التاريخ: ${bk.trip_date}\n` +
+    `🕐 الوقت: ${bk.trip_time || '09:00'}\n` +
+    `👥 ${bk.adults} بالغ${bk.children > 0 ? ' + ' + bk.children + ' أطفال' : ''}\n` +
+    `💰 المبلغ: *$${bk.total_price}*\n` +
+    `✅ الدفع: ${pm[bk.payment_method] || '—'}\n\n` +
+    `🔗 رابط التذكرة:\n` +
+    `puer-booking.netlify.app/ticket.html?id=${bk.ticket_number}\n\n` +
+    `📞 +20 112 075 4155\n` +
+    `_Puer Hurghada — الغردقة، مصر_`;
+
+  const phone = bk.customer_phone ? bk.customer_phone.replace(/\D/g,'') : WA;
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+loadTicket();
+</script>
+</body>
+</html>
