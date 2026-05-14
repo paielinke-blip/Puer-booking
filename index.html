@@ -798,6 +798,28 @@ async function confirmPayment() {
     closeModal('payModal');
     const b = updated[0] || payBooking;
     b.payment_status='paid'; b.status='confirmed'; b.payment_method=selMethod;
+
+    // Send ticket link via WhatsApp
+    const pm = {cash:'كاش', whatsapp:'واتساب', bank:'تحويل بنكي', card:'بطاقة'};
+    const ticketUrl = `puer-booking.netlify.app/ticket.html?id=${b.ticket_number}`;
+    const msg =
+      `🎫 *تذكرتك جاهزة — Puer Hurghada*\n\n` +
+      `أهلاً ${b.customer_name} 👋\n\n` +
+      `تم تأكيد حجزك ودفعك بنجاح ✅\n\n` +
+      `🎯 الرحلة: ${b.trip_name}\n` +
+      `📅 التاريخ: ${b.trip_date}\n` +
+      `🕐 الوقت: ${b.trip_time || '09:00'} صباحاً\n` +
+      `👥 ${b.adults} بالغ${(b.children||0) > 0 ? ' + ' + b.children + ' أطفال' : ''}\n` +
+      `💰 المبلغ المدفوع: *$${b.total_price}*\n\n` +
+      `🔗 *رابط تذكرتك:*\n` +
+      `https://${ticketUrl}\n\n` +
+      `_(افتح الرابط لمشاهدة التذكرة كاملة مع QR Code)_\n\n` +
+      `📞 +20 112 075 4155\n` +
+      `_Puer Hurghada للسياحة والمغامرات — الغردقة_`;
+
+    const phone = b.customer_phone ? b.customer_phone.replace(/\D/g,'') : WA;
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+
     openTicket(id, b);
     loadDashboard();
     loadPending();
@@ -847,7 +869,7 @@ async function openTicket(id, bData) {
     const qr = document.getElementById('qrcode');
     qr.innerHTML = '';
     new QRCode(qr, {
-      text: `PUER|${b.ticket_number}|${b.customer_name}|${b.trip_name}|${b.trip_date}|$${b.total_price}`,
+      text: b.ticket_number,
       width: 120, height: 120, colorDark:'#1a4a6b', colorLight:'#ffffff'
     });
     document.getElementById('ticketModal').classList.add('show');
